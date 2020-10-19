@@ -1,0 +1,80 @@
+---
+title: "Progress Report 2.3.2 Primary Paper"
+author: "Charles Bond"
+date: "10/19/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+---
+title: "Progress Report"
+author: "Charles Bond"
+date: "10/18/2020"
+output: pdf_document
+---
+
+# Current Status: *Sort of stuck but maybe figured it out while writing this?*
+I finally have the data for my primary paper, and I have read it into R to start working with. I downloaded the necessary packages `vegan` and `MASS`, which are supposed to contain the functions necessary for doing an NMDS. 
+
+  So, where I am stuck: First I need to run the data through a function like `dist` or `vegdist` (the latter is the version from `vegan`, which the internet seems to recommend for an nmds). Without having the original code, I am at the point of trying to figure out what functions to use. Like, `vegan` and `MASS` both have functions for an NMDS: `metaMDS` and `isoMDS`, respectively. I'm not sure which to use. 
+  
+  The author says "Sorry about the R code :/ I know I used the nmds {labdsv} function." *Just now* as I reread the email, I'm realizing that `labdsv` looks like another package which I don't yet have, which would explain why I haven't been able to use the function the author is telling me to use. Am I reading that right? The rest of the email is a description of an nmds function that is not in `MASS` or `vegan`, so I guess I need this `labdsv` package to do this?
+  
+## Description of the necessary function 
+"Nonmetric Multidimensional Scaling
+Description
+This function is simply a wrapper for the `isoMDS` function in the `MASS` package by Venables and Ripley. The purpose is to establish a ‘nmds’ class to simplify plotting and additional graphical analysis as well as a summary.
+Usage
+`nmds(dis,k=2,y=cmdscale(d=dis,k=k),maxit=50)`
+`bestnmds(dis,k=2,itr=20,maxit=100)`
+Arguments
+`dis`	a dist object returned from dist or a full symmetric dissimilarity or distance matrix
+`k`	the desired number of dimensions for the result
+`y`	a matrix of initial locations (objects as rows, coordinates as columns, as many columns as specified by k). If none is supplied, cmdscale is used to generate them
+`maxit`	the maximum number of iterations in the isoMDS routine
+`itr`	number of random starts to find best result`"
+
+
+So that's where I am, need another package. Sorry this isn't a ton of progress, I have been married to my NSF GRFP application for the past month, but submitting it right now so I'll be able to focus on this more in the coming week.
+
+## The Data:
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+rm(list=ls()) 
+
+```
+
+```{r}
+library(tidyverse)
+Diatom_RelAbun_clean<-read.csv("Primary Paper/data1/Diatoms_RelAbun_REDUCED_PRIMER.csv")
+Dia.RelAbun.ext<-Diatom_RelAbun_clean %>%
+  select(-c(Sample))
+x<-tibble(Dia.RelAbun.ext[1:10,1:10])
+
+```
+
+First ten columns and ten rows (small, arbitrary subset) out of 58 columns and 50 rows of data, just to show it's in here.
+```{r}
+print(x)
+```
+
+
+## Packages
+```{r}
+library("MASS")
+library("vegan")
+library("labdsv")
+dis_dia<- dist(Diatom_RelAbun_clean)
+Diatom_NMDS<-nmds(dis_dia,k=2,cmdscale(d=dis_dia, k=2),,)
+
+```
+
+## Background on the Article  
+For 2 years before I came to Tulane I worked in the Periphyton Lab at FIU, where a Ph.D. student/postdoc in our lab was part of a big mesocosm experiment looking at the responses of diatoms, among other things, to saltwater intrusion in the Florida Everglades (Mazzei et. al. 2018). Some of the wetland/soil microbial folks in our class may also find this interesting, the experiment had soil carbon and bacteria community components published in different papers. (I did not participate in this paper or this kind of data analysis).
+
+
+## References
+[1] Mazzei, V., Gaiser, E., Kominoski, E., Wilson, J., Servais, S., Bauman, B., . . . Troxler, F. (2018). Functional and Compositional Responses of Periphyton Mats to Simulated Saltwater Intrusion in the Southern Everglades. Estuaries and Coasts, 41(7), 2105-2119.
