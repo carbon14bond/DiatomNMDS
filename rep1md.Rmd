@@ -1,0 +1,44 @@
+---
+title: "Progress Report: Back-Up Paper"
+author: "Charles Bond"
+date: "10/18/2020"
+output: pdf_document
+---
+
+# Current Status: *Data is in R, holding on this as I focus back on the primary paper*
+
+When it was unclear if I could find data for my primary article, I found the data [1] for a similar article associated with a similar study [2] on the lab group's online database. The authors ran a principal coordinate analysis (PCO) ordination using the R Package TITAN (Threshold Indicator Taxa Analysis) [3]. 
+
+2 weeks ago in class, I focused on getting this data into R, which required manually removing special characters from the column headers in the data.
+
+Now that I have data and some guidance for the primary paper, my focus has turned back thataways.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+rm(list=ls()) 
+```
+
+``` {r, include=FALSE}
+Env = read.csv("data/FCE1216_Environment.txt")
+Peri = read.csv("data/FCE1216_Periphyton.txt")
+
+print(Peri[1:10,1:10])
+print(Env[1:10,1:10])
+
+```
+
+
+``` {r, include=FALSE}
+read.csv("data/FCE1226_PeriphytonPlates_DiatomRelAbund.csv")
+
+```
+
+
+## References
+[1] Mazzei, V., E. Gaiser. 2018. Periphyton, hydrological and environmental data in a coastal freshwater wetland (FCE), Florida Everglades National Park, USA (2014-2015). Environmental Data Initiative. https://doi.org/10.6073/pasta/4e6dc2b1aab5c02c224a27c2eaff2e82. Dataset accessed 2020-09-28. 
+
+[2] Mazzei, V., & Gaiser, E. (2018). Diatoms as tools for inferring ecotone boundaries in a coastal freshwater wetland threatened by saltwater intrusion. Ecological indicators, 88, 190-204. doi:10.1016/j.ecolind.2018.01.003
+
+[3] Baker, M. E. (2010). A new method for detecting and interpreting biodiversity and ecological community thresholds. Methods in Ecology and Evolution, 1(1). doi:10.1111/j.2041-210X.2009.00007.x
+
+
