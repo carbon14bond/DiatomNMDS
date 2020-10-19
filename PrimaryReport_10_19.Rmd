@@ -8,12 +8,7 @@ output: pdf_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
----
-title: "Progress Report"
-author: "Charles Bond"
-date: "10/18/2020"
-output: pdf_document
----
+
 
 # Current Status: *Sort of stuck but maybe figured it out while writing this?*
 I finally have the data for my primary paper, and I have read it into R to start working with. I downloaded the necessary packages `vegan` and `MASS`, which are supposed to contain the functions necessary for doing an NMDS. 
