@@ -1,0 +1,94 @@
+---
+title: "Progress Report 2.3.3 Primary Paper"
+author: "Charles Bond"
+date: "10/25/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+rm(list=ls()) 
+```
+
+
+# Current Status: *Partial Success!* Now I'm trying to seperate the data by site and treatment to produce 2 labeled NMDS plots. 
+
+## Sequence of what I did:
+
+I was able to set up labdsv functions for nmds: `dsvdist` and `nmds`. The output of the normal `dist` function and vegan `vegandist` functions generate NA values which cause an error in all the various NMDS functions I've tried to use. I was hoping the `labdsv` functions would fit together. I did find the `bray/curtis` similarity index is available in `dsvdist`, which is the index the paper used, so I am getting warmer. Still, I get an error that appears realted to NAs:
+"`Error in dsvdis(Dia.RelAbun.ext, "bray/curtis", weight = rep(1, ncol(x)),  : NA/NaN/Inf in foreign function call (arg 1)`" 
+I believe this means that in argument 1, where the dataset is listed, the function stops because there are NA values? But now I'm confused. Okay. So I used the function `complete.cases()` to look for missing values, and am just now realizing that the last two rows are totally blank. Now I've removed those. YAY, and now the NA error is gone, and the `dsvdist` now gives me a Bray-Curtis dissimilarity matrix! Yay! AND THE NMDS FUNCTION RUNS. Test plot below. 
+
+### I'm a bit stuck 
+splitting the data by the two site categories, just need to grind through this for a while really. I split the data and ran 2 seperate NMDS analyses, but these plots look different from the originals. Meanwhile, the single test plot looks like the author's two plots overlayed, which is aking me think this might be way they took the data and made their graphs in excel manually: **how can one seperate product of the nmds function by site?** The product of the NMDS function looks like some special list that I'm not sure how one would plot if joined with other data, or am I wrong? Would it be possible to run the abundance data altogether through the NMDS function and then post-facto join that list with?
+
+### So, my next task is to try and join the nmds function product with the factors by which I will group the data, and then to plot that in ggplot, if possible. 
+
+
+```{r readdatta}
+library(tidyverse)
+Diatom_RelAbun_clean<-read.csv("Primary Paper/data1/Diatoms_RelAbun_REDUCED_PRIMER.csv")
+Dia.RelAbun.ext<-Diatom_RelAbun_clean %>%
+  dplyr::select(-c(Sample))
+
+library(readr)
+mod_Diatoms_RelAbun <- read_csv("Primary Paper/data1/mod_Diatoms_RelAbun_REDUCED_PRIMER.csv",col_types=cols(Sample=col_factor(),Site=col_factor(),Treatment=col_factor()))
+print(mod_Diatoms_RelAbun)
+Diatoms.FW<-mod_Diatoms_RelAbun%>% filter(Site=="FW")
+Diatoms.BW<-mod_Diatoms_RelAbun%>% filter(Site=="OH")
+
+```
+
+
+
+
+## Preliminary NMDS test
+```{r}
+library("MASS")
+library("vegan")
+library("labdsv")
+x=Dia.RelAbun.ext
+dis_dia<- dsvdis(x,"bray/curtis",weight=rep(1,ncol(x)),step=0.0,diag=FALSE, upper=FALSE)
+Diatom_NMDS<-nmds(d=dis_dia,k=2,cmdscale(dis_dia,k=2))
+plot(Diatom_NMDS)
+```
+
+## Seperate NMDS plots for fresh and brackish water sites, evidently not what the paper did. 
+```{r}
+y<-Diatoms.FW %>% dplyr::select(-c(Sample, Date, Site, Chamber, Treatment,TrialID))
+FW.dis<- dsvdis(y,"bray/curtis",weight=rep(1,ncol(y)),step=0.0,diag=FALSE, upper=FALSE)
+FW.nmds<-nmds(d=FW.dis,k=2,cmdscale(FW.dis,k=2))
+plot(FW.nmds)
+
+z<-Diatoms.BW %>% dplyr::select(-c(Sample, Date, Site, Chamber, Treatment,TrialID))
+BW.dis<- dsvdis(z,"bray/curtis",weight=rep(1,ncol(z)),step=0.0,diag=FALSE, upper=FALSE)
+BW.nmds<-nmds(d=BW.dis,k=2,cmdscale(BW.dis,k=2))
+plot(BW.nmds,)
+```
+  
+
+
+## Background on the Article  
+For 2 years before I came to Tulane I worked in the Periphyton Lab at FIU, where a Ph.D. student/postdoc in our lab was part of a big mesocosm experiment looking at the responses of diatoms, among other things, to saltwater intrusion in the Florida Everglades (Mazzei et. al. 2018). Some of the wetland/soil microbial folks in our class may also find this interesting, the experiment had soil carbon and bacteria community components published in different papers. (I did not participate in this paper or this kind of data analysis).
+
+# Final Report Structure
+1. Give the full reference of the paper
+2. Name the task that you wanted to accomplish – i.e. which part of the research did you want to reproduce? If you are reproducing a figure, say what kind of figure it is.
+3. Were the data available that you could use to complete your task? Did you manage to obtain the data?
+    i. Did you have to do anything “special” to get the data, e.g. email the author, create an account somewhere
+4. Did you manage to read the data into R?
+  i.If no, where did you get stuck or give up?
+  ii. If yes, did you have to do anything to the data to read them into R? i.e. use excel and export as csv, modify the data in any way. Describe any code you wrote to wrangle the data
+5. Was code available to reproduce the task you set yourself?
+  i. If yes, did you manage to use the code exactly or closely reproduce the task?
+        a. If yes – describe what you did, put the code into github. Did you stop there or did you extend the task in some way? If the latter, go back to step 2 and describe the next task
+        b. If no, did you change the task? Or write new code yourself?
+  ii. If no, did you write (or try to write) the code to reproduce the task
+        a. If yes, did it work out? I should be able to run your code
+        b. If no, explain why not.
+
+
+
+
+## References
+[1] Mazzei, V., Gaiser, E., Kominoski, E., Wilson, J., Servais, S., Bauman, B., . . . Troxler, F. (2018). Functional and Compositional Responses of Periphyton Mats to Simulated Saltwater Intrusion in the Southern Everglades. Estuaries and Coasts, 41(7), 2105-2119.
