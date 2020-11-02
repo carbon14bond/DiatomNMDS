@@ -1,0 +1,107 @@
+---
+title: "Final Report 2.3.3 Primary Paper"
+author: "Charles Bond"
+date: "11/01/2020"
+output: pdf_document
+bibliography: refs_A1.bib
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+knitr::opts_chunk$set(message = FALSE)
+rm(list=ls()) 
+```
+For this assignment, I attempted to replicate a non-metric multidimensional scaling (NMDS) analysis and plot from a paper examining the effects of saltwater intrusion on diatom community structure [@RN36] (I finally got EndNote to make a working .bib file, but I had to change the extension manually). This meant making two separate x-y plots (for fresh and brackish water sites) that are an ordination of a Bray-Curtis dissimilarity of diatom relative abundance data from the two sets of sites. Neither the data nor the R code were publicly available, so I had to contact the corresponding author. They gave me the data, but they had lost track of the code. So, I had to try and replicate the analysis by knowing what packages were used, reportedly `vegan` and `MASS`. 
+
+  Reading the data into R proved tricky at several points. First off, special characters (the greek letter denoting 'micro') in column headers prevented me from importing the data. Later, after having imported the data, I realized after several errors that the data also included several totally blank rows at the end of the dataset, as if in the initial conversion by the author from excel to the .csv file some blank rows at the end were selected, or maybe to rows had been deleted? They said they removed extremely rare species, so maybe the space leftover from the rare species is what did it. So in the end, I had to manually alter headers and exclude the blank rows to get the data to work.
+
+```{r readdatta, include=FALSE}
+library(tidyverse)
+Diatom_RelAbun_clean<-read.csv("Primary Paper/data1/Diatoms_RelAbun_REDUCED_PRIMER.csv")
+Dia.RelAbun.ext<-Diatom_RelAbun_clean %>%
+  dplyr::select(-c(Sample))
+
+library(readr)
+mod_Diatoms_RelAbun <- read_csv("Primary Paper/data1/mod_Diatoms_RelAbun_REDUCED_PRIMER.csv",col_types=cols(Sample=col_factor(),Site=col_factor(),Treatment=col_factor()))
+print(mod_Diatoms_RelAbun)
+Diatoms.FW<-mod_Diatoms_RelAbun%>% filter(Site=="FW")
+Diatoms.BW<-mod_Diatoms_RelAbun%>% filter(Site=="OH")
+
+```
+  With the original code missing, I was at least able to reproduce the bare bones of the analysis and plots after much trial and error. Part of the confusion early on was that the paper referenced using the `vegan` package, which is consistent with what I've seen online on Bray-Curtis dissimilarity and NMDS plots. However, the author told me they used the `labdsv` package's `nmds` function, which I could not get to produce a similar-looking result. Ultimately, it was the `vegan` functions for dissimilarity and mds plots (`vegdist` and `metaMDS`, respectively) which gave me plots that a 180 degree rotation of the published version, and with different but proportionally correct scaling of the axes (Figure 1 and Figure 2). This is likely because, without the original code, I was left using the default values for the various parameters in these functions. With the nmds being an iterative function, it makes sense that the plot would be the same shape but rotated, as the start state would determine what a positive or negative value on the summary axes is, but without the original code I don't know what they did differently that altered where the function starts, or how it scales the axes. 
+  
+
+```{r, include=FALSE}
+library("MASS")
+library("vegan")
+library("labdsv")
+y<-Diatoms.FW %>% dplyr::select(-c(Sample, Date, Site, Chamber, Treatment,TrialID))
+FW.dis<- vegdist(y,  method = "bray")
+FW.nmds<-metaMDS(FW.dis, dist = "bray")
+plot(FW.nmds)
+```
+```{r}
+plot(FW.nmds)
+```
+
+#### Figure 1:
+*Ordination of Bray-Curtis dissimilarity of diatom relative abundance from freshwater sites.*
+
+```{r, include=FALSE}
+z<-Diatoms.BW %>% dplyr::select(-c(Sample, Date, Site, Chamber, Treatment,TrialID))
+BW.dis<- vegdist(z,  method = "bray")
+BW.nmds<-metaMDS(BW.dis, dist = "bray")
+plot(BW.nmds)
+```
+```{r}
+plot(BW.nmds)
+```
+
+#### Figure 2:
+*Ordination of Bray-Curtis dissimilarity of diatom relative abundance from brackish water sites.*
+
+
+The above figures came only after a lot of figuring out what parts of the data to run through which function from which package. In an earlier version, I ran the brackish and freshwater sites together through the dissimilarity and NMDS functions, which yielded an interesting result, showing clustering by site (Figure 3), but ultimately I realized this was not what was done in the paper. This was useful at least to prove the concept that we could use the function `cbind` to connect the nmds product with the sample metadata and then label the points in ggplot.
+
+```{r, include=FALSE}
+library("MASS")
+library("vegan")
+library("labdsv")
+x=Dia.RelAbun.ext
+#dis_dia<- dsvdis(x,"bray/curtis",weight=rep(1,ncol(x)),step=0.0,diag=FALSE, upper=FALSE)
+dis_dia<- vegdist(x,  distance = "bray")
+#Diatom_NMDS<-nmds(d=dis_dia,k=2,cmdscale(dis_dia,k=2))
+Diatom_NMDS<-metaMDS(dis_dia, dist = "bray")
+
+
+Dune<-cbind(mod_Diatoms_RelAbun[,1:6],Diatom_NMDS$points)
+
+```
+
+```{r plot}
+library(tidyverse)
+diatom_nmds_plot<-ggplot(data=Dune)+
+  aes(x=Dune[,7])+
+  aes(y=Dune[,8])+
+  xlab("NMDS 1")+
+  ylab("NMDS 2")+
+  geom_point()+
+  aes(color=Date )+
+  aes(shape=Treatment)+
+  facet_wrap(~Site , nrow = 2)+
+  theme_bw()
+
+
+print(diatom_nmds_plot)
+
+```
+
+#### Figure 3:
+*Earlier attempt at nmds plot, running brackish and fresh sites together and seperating them post-facto. This looks quite different from the published figures, but does show off how sites cluster based on type of site, experimental treatment, and date.* 
+
+
+
+  That is where I have decided to stop this reproduction. I could go on to rotate Figures 1 and 2 by 180 degrees and try to figure out scaling, but it feels arbitrary to try and make the appearance the same if I am missing the code that would allow me to analyze the results. So, rather than spending my time trying to replicate the aesthetics of the plots, I will move on to look for a paper with publicly available data *and* code so that I can replicate an ordination of microbial community data *and* hopefully be able to learn from more complete, well-commented code. 
+
+
+## References
