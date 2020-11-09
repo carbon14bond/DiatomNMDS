@@ -30,16 +30,26 @@ Diatoms.BW<-mod_Diatoms_RelAbun%>% filter(Site=="OH")
 ```
   With the original code missing, I was at least able to reproduce the bare bones of the analysis and plots after much trial and error. Part of the confusion early on was that the paper referenced using the `vegan` package, which is consistent with what I've seen online on Bray-Curtis dissimilarity and NMDS plots. However, the author told me they used the `labdsv` package's `nmds` function, which I could not get to produce a similar-looking result. Ultimately, it was the `vegan` functions for dissimilarity and mds plots (`vegdist` and `metaMDS`, respectively) which gave me plots that a 180 degree rotation of the published version, and with different but proportionally correct scaling of the axes (Figure 1 and Figure 2). This is likely because, without the original code, I was left using the default values for the various parameters in these functions. With the nmds being an iterative function, it makes sense that the plot would be the same shape but rotated, as the start state would determine what a positive or negative value on the summary axes is, but without the original code I don't know what they did differently that altered where the function starts, or how it scales the axes. 
   
-
-```{r, include=FALSE}
+## Example code 
+Here I have included the code for the NMDS of diatom community relative abundance data at freshwater sites (code was repeated for brackish water sitess in seperate chunk, not shown). Following the code is the output of the NMDS function, showing that it runs 20 iterations trying to flatten the multidimensional data to two axes. 
+```{r, echo=TRUE}
+#LOADING PACKAGES, I tested alternative functions from all three of these but ultimately used the `vegan` versions.
 library("MASS")
 library("vegan")
 library("labdsv")
+
+
+#selecting relative abundance data, i.e. negative selecting everything that's not what I want.
 y<-Diatoms.FW %>% dplyr::select(-c(Sample, Date, Site, Chamber, Treatment,TrialID))
+
+#creating a Bray-Curtis dissimilarity matrix of the data
 FW.dis<- vegdist(y,  method = "bray")
+
+#Running the Bray-Curtis dissimilarity output through the NMDS function, which will give (x,y) NMDS axis values for each sample to plot.
 FW.nmds<-metaMDS(FW.dis, dist = "bray")
-plot(FW.nmds)
+
 ```
+
 ```{r}
 plot(FW.nmds)
 ```

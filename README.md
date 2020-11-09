@@ -3,4 +3,7 @@ Replicating NMDS analysis from Mazzei, V., Gaiser, E., Kominoski, E., Wilson, J.
 
 This code will require the packages `vegan`, `MASS`, and `labdsv` to run.
 
+See 2.3_Primary Paper_Final Report.Rmd for full code.
+
+Data is in "Primary Paper" folder, but I use relative paths o it ssshould all run. 
 
